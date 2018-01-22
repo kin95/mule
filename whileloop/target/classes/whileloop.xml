@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="18081" doc:name="HTTP Listener Configuration"/>
+    
+    <flow name="main_flow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/test" doc:name="Inbound HTTP call"/>
+        <set-variable variableName="counter" value="#[10]" doc:name="Storing the call frequency"/>
+        <set-variable variableName="myList" value="#[new java.util.ArrayList()]" doc:name="Variable"/>
+        <flow-ref name="while_loop" doc:name="Call while Loop"/>
+        <logger message="Final counter is #[flowVars.counter] -- myList is #[flowVars.myList]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="while_loop">
+        <choice doc:name="Choice">
+            <when expression="#[flowVars.counter >1]">
+                <set-variable doc:name="Counter deduction" value="#[flowVars.counter - 1]" variableName="counter"/>
+                <expression-transformer encoding="UTF-8" expression="#[flowVars.myList.add(flowVars.counter)]" doc:name="Expression"/>
+                <logger message="Counter is #[flowVars.counter]" level="INFO" doc:name="Logger"/>
+                <flow-ref name="while_loop" doc:name="while_loop"/>
+            </when>
+            <otherwise>
+                <logger message="The loop breaks" level="INFO" doc:name="The loop breaks"/>
+            </otherwise>
+        </choice>
+    </flow>
+    
+</mule>
